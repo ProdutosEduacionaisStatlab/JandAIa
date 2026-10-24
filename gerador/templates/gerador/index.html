@@ -62,7 +62,7 @@
                         </div>
                         <div class="slicer-box">
                             <label class="slicer-label">Contexto Alvo</label>
-                            <select id="curso" name="curso" class="form-select form-select-sm" disabled required>
+                            <select id="curso" name="curso" class="form-select form-select-sm" onchange="filtrarTopicos()" disabled required>
                                 <option value="">Aguardando nível...</option>
                             </select>
                         </div>
@@ -86,6 +86,8 @@
         </main>
     </div>
 </div>
+
+{{ topicos_por_curso|json_script:"topicos-por-curso" }}
 
 <script>
     const cursosData = [
@@ -111,6 +113,22 @@
         } else {
             cursoSelect.disabled = true;
         }
+        filtrarTopicos();
+    }
+
+    // Mostra em cada bloco só os tópicos que têm questões para o contexto alvo escolhido
+    function filtrarTopicos() {
+        const dados = JSON.parse(document.getElementById('topicos-por-curso').textContent);
+        const permitidos = dados[document.getElementById('curso').value] || [];
+        document.querySelectorAll('select[name="bloco_topico[]"]').forEach(sel => {
+            Array.from(sel.options).forEach(o => {
+                if (!o.value) return;
+                const ok = permitidos.includes(Number(o.value));
+                o.hidden = !ok;
+                o.disabled = !ok;
+            });
+            if (sel.selectedOptions[0] && sel.selectedOptions[0].disabled) sel.value = '';
+        });
     }
 
     let contadorQuestoes = 0;
@@ -151,6 +169,7 @@
         document.querySelectorAll(`input[name="formato_${contadorQuestoes}"]`).forEach(r => {
             r.onchange = (e) => document.getElementById(`hidden_${contadorQuestoes}`).value = e.target.value;
         });
+        filtrarTopicos();
     }
 
     function removerBloco(id) { document.getElementById(`bloco-${id}`).remove(); }
