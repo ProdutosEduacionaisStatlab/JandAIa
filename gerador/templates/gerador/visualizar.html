@@ -15,6 +15,16 @@
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
+    <script>
+    function alternarGabarito() {
+        const prova = document.getElementById('conteudo-prova');
+        const gab = document.getElementById('conteudo-gabarito');
+        const mostrandoGabarito = gab.style.display !== 'none';
+        gab.style.display = mostrandoGabarito ? 'none' : 'block';
+        prova.style.display = mostrandoGabarito ? 'block' : 'none';
+        document.getElementById('btn-gabarito').textContent = mostrandoGabarito ? 'Ver gabarito' : 'Ver prova';
+    }
+    </script>
     <style>
         body {
             background-color: #525659; /* Fundo cinza escuro igual a leitor de PDF */
@@ -35,18 +45,68 @@
             font-size: 1.15rem;
             line-height: 1.5;
         }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 0; }
+            .folha-a4 { box-shadow: none; padding: 0; max-width: none; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="container text-center mb-4">
+    <div class="container text-center mb-4 no-print">
         <a href="{% url 'index' %}" class="btn btn-light fw-bold shadow-sm">← Voltar e Montar Outra</a>
         <button class="btn btn-primary fw-bold shadow-sm ms-2" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+        <button id="btn-gabarito" class="btn btn-outline-light fw-bold shadow-sm ms-2" onclick="alternarGabarito()">Ver gabarito</button>
     </div>
 
     <div class="folha-a4">
-        {{ prova_html|safe }}
+        <div class="mb-4 pb-3 border-bottom">
+            <h4 class="text-center fw-bold mb-3">Avaliação</h4>
+            <div class="d-flex justify-content-between">
+                <div><strong>Professor:</strong> {{ professor|default:"______________________" }}</div>
+                <div><strong>Semestre:</strong> {{ periodo|default:"________" }}</div>
+            </div>
+            {% if curso %}
+            <div class="mt-2"><strong>Contexto:</strong> {{ curso.nome }}</div>
+            {% endif %}
+        </div>
+        <div id="conteudo-prova" class="questao"></div>
+        <div id="conteudo-gabarito" class="questao" style="display: none;"></div>
     </div>
+
+    {{ prova_latex_gerada|json_script:"prova-latex" }}
+    {{ gabarito_latex_gerado|json_script:"gabarito-latex" }}
+
+    <script>
+    function latexParaHtml(t) {
+        t = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        // tira preâmbulo, caso a IA o inclua mesmo assim
+        t = t.replace(/^[\s\S]*?\\begin\{document\}/, '').replace(/\\end\{document\}[\s\S]*$/, '');
+        t = t.replace(/\\(documentclass|usepackage|geometry|pagestyle|setlength)(\[[^\]]*\])?\{[^}]*\}(\{[^}]*\})?/g, '');
+        // tira restos de markdown
+        t = t.replace(/^\s*-{3,}\s*$/gm, '').replace(/^\s*\*\*Documento[^\n]*\n/gim, '');
+        t = t.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+        // estrutura e texto
+        t = t.replace(/\\section\*?\{([^{}]*)\}/g, '<h5>$1</h5>').replace(/\\subsection\*?\{([^{}]*)\}/g, '<h6>$1</h6>');
+        t = t.replace(/\\textbf\{([^{}]*)\}/g, '<b>$1</b>').replace(/\\textit\{([^{}]*)\}/g, '<i>$1</i>');
+        t = t.replace(/\\begin\{enumerate\}(\[[^\]]*\])?/g, '<ol type="a">').replace(/\\end\{enumerate\}/g, '</ol>');
+        t = t.replace(/\\begin\{itemize\}/g, '<ul>').replace(/\\end\{itemize\}/g, '</ul>');
+        t = t.replace(/\\item(\[[^\]]*\])?\s*/g, '<li>');
+        t = t.replace(/\\\\/g, '<br>').replace(/\\(newline|noindent|hfill|medskip|bigskip|smallskip|newpage|maketitle)/g, '');
+        t = t.replace(/\\vspace\*?\{[^}]*\}/g, '');
+        t = t.replace(/\n\s*\n/g, '<br><br>');
+        return t;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const p = JSON.parse(document.getElementById('prova-latex').textContent);
+        const g = JSON.parse(document.getElementById('gabarito-latex').textContent);
+        document.getElementById('conteudo-prova').innerHTML = latexParaHtml(p);
+        document.getElementById('conteudo-gabarito').innerHTML = latexParaHtml(g);
+        if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise();
+    });
+    </script>
 
 </body>
 </html>
