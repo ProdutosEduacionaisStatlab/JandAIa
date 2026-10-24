@@ -13,3 +13,5 @@ class TopicoAdmin(admin.ModelAdmin):
 @admin.register(EsqueletoQuestao)
 class EsqueletoQuestaoAdmin(ImportExportModelAdmin):
     list_display = ('id', 'topico', 'subtopico')
+    filter_horizontal = ('cursos',)
+    list_filter = ('cursos',)
