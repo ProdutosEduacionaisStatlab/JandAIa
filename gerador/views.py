@@ -10,18 +10,18 @@ from openai import OpenAI
 import io
 import zipfile
 from django.shortcuts import redirect
+from django.db.models import Q
 from .models import Curso, Topico, EsqueletoQuestao
 
-# ---------------------------------------------------------
-# CONFIGURAÇÃO DA IA (NVIDIA NIM - DeepSeek R1)
-# ---------------------------------------------------------
-# Cole a sua chave gerada no site build.nvidia.com aqui dentro das aspas:
-api_key =os.environ.get("NVIDIA_API_KEY")
+api_key = os.environ.get("GROQ_API_KEY")
 
 client = OpenAI(
-    base_url="https://integrate.api.nvidia.com/v1",
+    base_url="https://api.groq.com/openai/v1",
     api_key=api_key
 )
+
+# Modelo usado nas chamadas (confira os nomes disponíveis no console da Groq)
+MODELO = "openai/gpt-oss-120b"
 
 
 # ---------------------------------------------------------
@@ -30,11 +30,21 @@ client = OpenAI(
 def index(request):
     cursos = Curso.objects.all()
     topicos = Topico.objects.all()
-    return render(request, 'gerador/index.html', {'cursos': cursos, 'topicos': topicos})
+    gerais = set(EsqueletoQuestao.objects.filter(cursos__isnull=True)
+                 .values_list('topico_id', flat=True))
+    topicos_por_curso = {
+        str(c.id): sorted(set(c.esqueletos.values_list('topico_id', flat=True)) | gerais)
+        for c in cursos
+    }
+    return render(request, 'gerador/index.html', {
+        'cursos': cursos,
+        'topicos': topicos,
+        'topicos_por_curso': topicos_por_curso,
+    })
 
 
 # ---------------------------------------------------------
-# 2. MOTOR DE GERAÇÃO DE PROVAS 
+# 2. MOTOR DE GERAÇÃO DE PROVAS
 # ---------------------------------------------------------
 def gerar_provas(request):
     if request.method == 'POST':
@@ -42,23 +52,25 @@ def gerar_provas(request):
         curso_id = request.POST.get('curso')
         curso = Curso.objects.get(id=curso_id) if curso_id else None
 
-        # Captura as LISTAS enviadas pelos blocos de Lego
+        professor = request.POST.get('professor', '').strip()
+        periodo = request.POST.get('periodo', '').strip()
+
         topicos_ids = request.POST.getlist('bloco_topico[]')
         qtd_itens_lista = request.POST.getlist('bloco_qtd_itens[]')
         formatos_lista = request.POST.getlist('bloco_formato[]')
 
-        # Inicia a montagem do Super Prompt
         contexto_prova = f"Crie uma avaliação customizada. Público-alvo: {curso.nome if curso else 'Geral'}. Contexto: {curso.descricao_contexto if curso else 'Geral'}\n\n"
         instrucoes_questoes = ""
 
-        # Loop passando por cada bloco de Lego que o professor adicionou
         for i in range(len(topicos_ids)):
             if not topicos_ids[i]:
                 continue  # Pula se o bloco estiver vazio
 
             topico_base = Topico.objects.get(id=topicos_ids[i])
-            # Sorteia um esqueleto qualquer dentro deste tópico no banco
-            esqueleto = EsqueletoQuestao.objects.filter(topico=topico_base).order_by('?').first()
+            qs = EsqueletoQuestao.objects.filter(topico=topico_base)
+            if curso:
+                qs = qs.filter(Q(cursos=curso) | Q(cursos__isnull=True)).distinct()
+            esqueleto = qs.order_by('?').first()
 
             qtd_itens = int(qtd_itens_lista[i])
             formato = formatos_lista[i]
@@ -70,7 +82,6 @@ def gerar_provas(request):
                 instrucoes_questoes += f"Base Matemática: {esqueleto.enunciado_base}\n"
                 instrucoes_questoes += f"Regras de Sorteio dos Números: {esqueleto.instrucoes_ia}\n"
 
-            # Aplica as regras de formato que o professor escolheu na tela
             if qtd_itens > 0:
                 instrucoes_questoes += f"Formato Exigido: Crie {qtd_itens} subitens (a, b, c...) do tipo {formato}.\n\n"
             else:
@@ -86,30 +97,34 @@ def gerar_provas(request):
         ESTRUTURA DAS QUESTÕES:
         {instrucoes_questoes}
 
-        SUA TAREFA É GERAR DOIS DOCUMENTOS FORMATADOS EM LATEX PURO:
+        SUA TAREFA É GERAR DOIS TEXTOS EM LATEX (apenas o CORPO, sem preâmbulo):
 
-        DOCUMENTO 1: A PROVA
-        - Formate as questões com seus respectivos enunciados prontos para compilação em LaTeX.
+        TEXTO 1: A PROVA
+        - Escreva só o conteúdo das questões. NÃO inclua \\documentclass, \\usepackage, \\begin{{document}}, \\end{{document}} nem \\geometry.
+        - NÃO use markdown (nada de **, ---, # nem títulos como "Documento 1").
+        - Comandos permitidos: \\textbf{{}}, \\textit{{}}, \\begin{{enumerate}} com \\item, \\begin{{itemize}} com \\item e \\\\ para quebra de linha. Matemática SEMPRE entre $...$ (ou $$...$$ para destacar).
+        - Comece cada questão com \\textbf{{Questão N.}}.
         - Não inclua nenhuma resposta aqui.
-        - Após a última questão da prova, insira EXATAMENTE esta tag em uma linha isolada:
+        - Após a última questão, insira EXATAMENTE esta tag em uma linha isolada:
         [DIVISOR_STATLAB]
 
-        DOCUMENTO 2: O GABARITO COM RESOLUÇÕES
-        - Para cada questão, gere a resolução completa e o passo a passo matemático detalhado.
-        - Mantenha a formatação em LaTeX rigorosa para as equações.
+        TEXTO 2: O GABARITO COM RESOLUÇÕES
+        - Mesmas regras de formatação do texto 1 (sem preâmbulo, sem markdown).
+        - Para cada questão, a resolução completa, passo a passo, e a resposta final.
         """
 
         try:
-            # CHAMADA PARA A NVIDIA (DeepSeek)
+            # CHAMADA PARA A GROQ
             resposta_completa = client.chat.completions.create(
-                model="deepseek-ai/deepseek-v4-pro", # Ou o modelo que estiver usando
+                model=MODELO,
                 messages=[{"role": "user", "content": prompt_final}],
                 temperature=0.3,
-                max_tokens=4096
+                max_completion_tokens=8192,
+                reasoning_effort="medium"
             )
 
-            texto_bruto = resposta_completa.choices[0].message.content
-            
+            texto_bruto = resposta_completa.choices[0].message.content or ""
+
             # Remove a tag <think> gerada pelo DeepSeek e blocos de código
             resposta_limpa = re.sub(r'<think>.*?</think>', '', texto_bruto, flags=re.DOTALL).strip()
             resposta_limpa = resposta_limpa.replace('```latex', '').replace('```tex', '').replace('```', '').strip()
@@ -127,13 +142,17 @@ def gerar_provas(request):
             # Envia as duas partes separadas para o HTML
             return render(request, 'gerador/visualizar.html', {
                 'prova_latex_gerada': prova_latex,
-                'gabarito_latex_gerado': gabarito_latex
+                'gabarito_latex_gerado': gabarito_latex,
+                'professor': professor,
+                'periodo': periodo,
+                'curso': curso,
             })
 
         except Exception as e:
             return HttpResponse(f"<h3>Erro na IA:</h3> <p>{str(e)}</p>")
 
-    return render(request, 'gerador/index.html')
+    return redirect('index')
+
 
 # ---------------------------------------------------------
 # 3. SALA DE TREINAMENTO (LEITOR DE PDF DO ADMIN)
@@ -171,15 +190,15 @@ def treinar_ia(request):
         """
 
         try:
-            # NOVA CHAMADA PARA A NVIDIA (DeepSeek R1)
             resposta_completa = client.chat.completions.create(
-                model="deepseek-ai/deepseek-r1",
+                model=MODELO,
                 messages=[{"role": "user", "content": prompt_treinamento}],
                 temperature=0.3,
-                max_tokens=4096
+                max_completion_tokens=8192,
+                reasoning_effort="low"
             )
 
-            texto_bruto = resposta_completa.choices[0].message.content
+            texto_bruto = resposta_completa.choices[0].message.content or ""
             # Remove a tag <think>
             texto_sem_think = re.sub(r'<think>.*?</think>', '', texto_bruto, flags=re.DOTALL).strip()
 
@@ -209,16 +228,14 @@ def treinar_ia(request):
     return render(request, 'gerador/treinar.html')
 
 
-
 def baixar_latex(request):
     if request.method == 'POST':
         conteudo_latex = request.POST.get('conteudo_gerado', '')
         response = HttpResponse(conteudo_latex, content_type='text/plain')
         response['Content-Disposition'] = 'attachment; filename="prova_statlab.tex"'
         return response
-    
-    return redirect('index')
 
+    return redirect('index')
 
 
 def baixar_pacote_prova(request):
@@ -226,7 +243,7 @@ def baixar_pacote_prova(request):
         # 1. Pega os textos que a IA gerou (vamos supor que você envie a prova e o gabarito separados no HTML)
         prova_tex = request.POST.get('conteudo_prova', '% Código LaTeX da Prova')
         gabarito_tex = request.POST.get('conteudo_gabarito', '% Código LaTeX do Gabarito')
-        
+
         # 2. Cria um espaço temporário na memória RAM
         buffer = io.BytesIO()
 
@@ -235,8 +252,8 @@ def baixar_pacote_prova(request):
             # Aqui vamos adicionando os arquivos dentro do ZIP um por um!
             zip_file.writestr('prova_editavel.tex', prova_tex)
             zip_file.writestr('gabarito_editavel.tex', gabarito_tex)
-            
-            # (No futuro, quando tivermos o código do Word e PDF prontos, 
+
+            # (No futuro, quando tivermos o código do Word e PDF prontos,
             # é só adicionar mais linhas zip_file.writestr() aqui)
 
         # 4. Prepara a resposta para o navegador baixar como ZIP
@@ -244,5 +261,5 @@ def baixar_pacote_prova(request):
         response['Content-Disposition'] = 'attachment; filename="Pacote_StatLab.zip"'
 
         return response
-    
+
     return redirect('index')
