@@ -1,4 +1,3 @@
-import os
 import json
 import re
 import PyPDF2
@@ -12,9 +11,9 @@ import zipfile
 from django.shortcuts import redirect
 from django.db.models import Q
 from .models import Curso, Topico, EsqueletoQuestao
+from django.conf import settings
 
-api_key = os.environ.get("GROQ_API_KEY")
-
+api_key = settings.GROQ_API_KEY
 client = OpenAI(
     base_url="https://api.groq.com/openai/v1",
     api_key=api_key
@@ -106,7 +105,7 @@ def gerar_provas(request):
         - Comece cada questão com \\textbf{{Questão N.}}.
         - Não inclua nenhuma resposta aqui.
         - Após a última questão, insira EXATAMENTE esta tag em uma linha isolada:
-        [DIVISOR_STATLAB]
+        [DIVISOR_JANDAIA]
 
         TEXTO 2: O GABARITO COM RESOLUÇÕES
         - Mesmas regras de formatação do texto 1 (sem preâmbulo, sem markdown).
@@ -130,8 +129,8 @@ def gerar_provas(request):
             resposta_limpa = resposta_limpa.replace('```latex', '').replace('```tex', '').replace('```', '').strip()
 
             # O GOLPE DE MESTRE: Corta o texto no meio usando a tag
-            if "[DIVISOR_STATLAB]" in resposta_limpa:
-                partes = resposta_limpa.split("[DIVISOR_STATLAB]")
+            if "[DIVISOR_JANDAIA]" in resposta_limpa:
+                partes = resposta_limpa.split("[DIVISOR_JANDAIA]")
                 prova_latex = partes[0].strip()
                 gabarito_latex = partes[1].strip()
             else:
@@ -232,7 +231,7 @@ def baixar_latex(request):
     if request.method == 'POST':
         conteudo_latex = request.POST.get('conteudo_gerado', '')
         response = HttpResponse(conteudo_latex, content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename="prova_statlab.tex"'
+        response['Content-Disposition'] = 'attachment; filename="prova_jandaia.tex"'
         return response
 
     return redirect('index')
@@ -258,7 +257,7 @@ def baixar_pacote_prova(request):
 
         # 4. Prepara a resposta para o navegador baixar como ZIP
         response = HttpResponse(buffer.getvalue(), content_type='application/zip')
-        response['Content-Disposition'] = 'attachment; filename="Pacote_StatLab.zip"'
+        response['Content-Disposition'] = 'attachment; filename="Pacote_JandAIa.zip"'
 
         return response
 
