@@ -16,11 +16,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 5. Copia todo o nosso código do StatLab para o servidor
+# 5. Copia todo o nosso código do JandAIa para o servidor
 COPY . .
 
 # 6. Empacota o design (CSS) e as imagens
 RUN python manage.py collectstatic --noinput
 
 # 7. O grande comando final: Roda o banco de dados e liga o site!
-CMD ["gunicorn", "statlab.wsgi:application", "--bind", "0.0.0.0:8000", "--timeout", "120"]
+CMD ["gunicorn", "jandaia.wsgi:application", "--bind", "0.0.0.0:8000", "--timeout", "120"]
