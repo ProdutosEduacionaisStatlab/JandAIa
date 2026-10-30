@@ -1,0 +1,3 @@
+# Scripts de shell precisam de quebra de linha LF mesmo quando o projeto é clonado no Windows.
+*.sh text eol=lf
+*.spec text eol=lf
