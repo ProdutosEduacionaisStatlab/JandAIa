@@ -12,12 +12,12 @@ load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = Path(os.environ.get('JANDAIA_DATA_DIR', BASE_DIR))
 
 # Quick-start development settings - unsuitable for production
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-xw3)kex6o#k38%hcbu2a98@cs=j=raz=9+w1agr%j7ex4wnl5%')
 
-DEBUG = True
-
+DEBUG = os.environ.get('JANDAIA_DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = ['*']
 
 # Application definition
@@ -66,7 +66,7 @@ WSGI_APPLICATION = 'jandaia.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DATA_DIR / 'db.sqlite3'
     }
 }
 
@@ -107,7 +107,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 
-CSRF_TRUSTED_ORIGINS = [
-    'http://163.176.51.10',
-    'http://163.176.51.10:8000',
-]
+CSRF_TRUSTED_ORIGINS = [o for o in os.environ.get('JANDAIA_CSRF_ORIGINS', '').split(',') if o]
