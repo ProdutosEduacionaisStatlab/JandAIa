@@ -1,0 +1,376 @@
+[
+{
+  "model": "gerador.curso",
+  "pk": 1,
+  "fields": {
+    "nome": "Ensino Fundamental II",
+    "nivel": "fundamental",
+    "descricao_contexto": "Estudantes do 6º ao 9º ano, conteúdos da BNCC, linguagem simples e contextos do cotidiano."
+  }
+},
+{
+  "model": "gerador.curso",
+  "pk": 2,
+  "fields": {
+    "nome": "Ensino Médio",
+    "nivel": "medio",
+    "descricao_contexto": "Estudantes do 1º ao 3º ano, preparação para ENEM e vestibulares."
+  }
+},
+{
+  "model": "gerador.curso",
+  "pk": 3,
+  "fields": {
+    "nome": "Engenharia de Software",
+    "nivel": "superior",
+    "descricao_contexto": "Graduação em Engenharia de Software, foco em programação, algoritmos e engenharia de sistemas."
+  }
+},
+{
+  "model": "gerador.curso",
+  "pk": 4,
+  "fields": {
+    "nome": "Ciência de Dados",
+    "nivel": "superior",
+    "descricao_contexto": "Graduação/pós em Ciência de Dados, foco em estatística, Python e aprendizado de máquina."
+  }
+},
+{
+  "model": "gerador.topico",
+  "pk": 1,
+  "fields": {
+    "nome": "matematica"
+  }
+},
+{
+  "model": "gerador.topico",
+  "pk": 2,
+  "fields": {
+    "nome": "fisica"
+  }
+},
+{
+  "model": "gerador.topico",
+  "pk": 3,
+  "fields": {
+    "nome": "quimica"
+  }
+},
+{
+  "model": "gerador.topico",
+  "pk": 4,
+  "fields": {
+    "nome": "programacao"
+  }
+},
+{
+  "model": "gerador.topico",
+  "pk": 5,
+  "fields": {
+    "nome": "estatistica"
+  }
+},
+{
+  "model": "gerador.topico",
+  "pk": 6,
+  "fields": {
+    "nome": "portugues"
+  }
+},
+{
+  "model": "gerador.topico",
+  "pk": 7,
+  "fields": {
+    "nome": "historia"
+  }
+},
+{
+  "model": "gerador.topico",
+  "pk": 8,
+  "fields": {
+    "nome": "geografia"
+  }
+},
+{
+  "model": "gerador.topico",
+  "pk": 9,
+  "fields": {
+    "nome": "biologia"
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 1,
+  "fields": {
+    "topico": 1,
+    "subtopico": null,
+    "enunciado_base": "Uma pesquisa foi realizada com os alunos de uma turma para saber quantas horas por dia eles utilizam a internet para atividades de lazer. Os resultados obtidos foram:\r\n\r\n1, 2, 2, 3, 4, 2, 5, 3, 2, 4\r\n\r\nCom base nesses dados, responda:\r\n\r\na) Qual é a média de horas diárias de uso da internet?\r\n b) Qual é a moda da distribuição?\r\n c) Qual é a mediana dos dados?\r\n d) O que a moda encontrada representa no contexto da pesquisa?",
+    "instrucoes_ia": "sorteie os números que a questão oferece para gerar questões diferentes e não repetir a questão na hora da criação da prova",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 2,
+  "fields": {
+    "topico": 1,
+    "subtopico": "Equação do 2º grau",
+    "enunciado_base": "Resolva a equação x² - 5x + 6 = 0 e responda:\r\n\r\na) Quais são as raízes?\r\nb) Qual o valor do discriminante (delta)?\r\nc) Qual a soma e o produto das raízes?\r\nd) Qual o vértice da parábola correspondente?",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 3,
+  "fields": {
+    "topico": 1,
+    "subtopico": "Progressão aritmética",
+    "enunciado_base": "Em uma PA, o primeiro termo é 3 e a razão é 4. Determine:\r\n\r\na) O 10º termo\r\nb) A soma dos 10 primeiros termos\r\nc) A posição do termo 47\r\nd) Se 100 pertence à PA",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 4,
+  "fields": {
+    "topico": 1,
+    "subtopico": "Probabilidade",
+    "enunciado_base": "Uma urna contém 5 bolas vermelhas, 3 azuis e 2 verdes. Retira-se uma bola ao acaso. Calcule:\r\n\r\na) P(vermelha)\r\nb) P(não ser azul)\r\nc) P(vermelha ou verde)\r\nd) Probabilidade de retirar duas azuis sem reposição",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 5,
+  "fields": {
+    "topico": 1,
+    "subtopico": "Porcentagem",
+    "enunciado_base": "Um produto custa R$ 200,00 e recebe um desconto de 15%, seguido de um acréscimo de 10% sobre o valor com desconto. Responda:\r\n\r\na) Preço após o desconto\r\nb) Preço final\r\nc) Variação percentual total\r\nd) O preço final é maior ou menor que o original?",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 6,
+  "fields": {
+    "topico": 2,
+    "subtopico": "Cinemática",
+    "enunciado_base": "Um carro parte do repouso e acelera a 2 m/s² durante 10 s. Calcule:\r\n\r\na) A velocidade final\r\nb) A distância percorrida\r\nc) A velocidade média no intervalo\r\nd) Em quanto tempo atingiria 50 m/s?",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 7,
+  "fields": {
+    "topico": 2,
+    "subtopico": "Leis de Newton",
+    "enunciado_base": "Um bloco de 4 kg é puxado por uma força horizontal de 20 N sobre uma superfície com atrito de 8 N. Determine:\r\n\r\na) A força resultante\r\nb) A aceleração do bloco\r\nc) O peso do bloco (g = 10 m/s²)\r\nd) O que ocorre se a força cair para 8 N?",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 8,
+  "fields": {
+    "topico": 2,
+    "subtopico": "Eletricidade",
+    "enunciado_base": "Um resistor de 20 Ω é ligado a uma bateria de 12 V. Calcule:\r\n\r\na) A corrente elétrica\r\nb) A potência dissipada\r\nc) A energia consumida em 5 minutos\r\nd) A corrente se o resistor fosse de 40 Ω",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 9,
+  "fields": {
+    "topico": 3,
+    "subtopico": "Estequiometria",
+    "enunciado_base": "A combustão do metano é CH4 + 2 O2 -> CO2 + 2 H2O. Para 32 g de CH4 (massa molar 16 g/mol), determine:\r\n\r\na) O número de mols de CH4\r\nb) Mols de O2 necessários\r\nc) Massa de CO2 produzida (44 g/mol)\r\nd) Massa de água produzida (18 g/mol)",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 10,
+  "fields": {
+    "topico": 3,
+    "subtopico": "Soluções",
+    "enunciado_base": "Dissolvem-se 40 g de NaOH (40 g/mol) em água até completar 500 mL de solução. Calcule:\r\n\r\na) A quantidade de matéria de NaOH\r\nb) A concentração em mol/L\r\nc) A concentração em g/L\r\nd) A molaridade após diluir para 2 L",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 11,
+  "fields": {
+    "topico": 3,
+    "subtopico": "pH",
+    "enunciado_base": "Uma solução tem [H+] = 1 x 10^-3 mol/L. Responda:\r\n\r\na) Qual o pH?\r\nb) Qual o pOH?\r\nc) A solução é ácida, básica ou neutra?\r\nd) Qual o pH se a concentração de H+ for 10 vezes menor?",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 12,
+  "fields": {
+    "topico": 4,
+    "subtopico": "Complexidade de algoritmos",
+    "enunciado_base": "Considere um algoritmo de busca binária em um vetor ordenado de 1024 elementos. Responda:\r\n\r\na) Qual a complexidade de tempo?\r\nb) Quantas comparações no pior caso?\r\nc) Qual a pré-condição para o uso?\r\nd) Compare com a busca linear.",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 13,
+  "fields": {
+    "topico": 4,
+    "subtopico": "Estruturas de dados",
+    "enunciado_base": "Uma pilha começa vazia e recebe as operações: push(4), push(7), pop(), push(9), push(2), pop(). Responda:\r\n\r\na) Qual o estado final da pilha?\r\nb) Qual elemento está no topo?\r\nc) Quantos elementos restam?\r\nd) Qual a diferença entre pilha e fila?",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 14,
+  "fields": {
+    "topico": 4,
+    "subtopico": "Lógica e laços",
+    "enunciado_base": "Analise o trecho: soma = 0; para i de 1 até 10: se i for par, soma = soma + i. Responda:\r\n\r\na) Qual o valor final de soma?\r\nb) Quantas iterações ocorrem?\r\nc) Quantas vezes a condição é verdadeira?\r\nd) Como obter a soma dos ímpares?",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 15,
+  "fields": {
+    "topico": 5,
+    "subtopico": "Medidas de dispersão",
+    "enunciado_base": "Os salários (em mil reais) de 8 funcionários são: 2, 3, 3, 4, 5, 5, 6, 12. Calcule:\r\n\r\na) A média\r\nb) A mediana\r\nc) A amplitude\r\nd) O desvio padrão populacional aproximado e o efeito do valor 12",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 16,
+  "fields": {
+    "topico": 5,
+    "subtopico": "Distribuição normal",
+    "enunciado_base": "As notas de uma prova seguem distribuição normal com média 70 e desvio padrão 10. Responda:\r\n\r\na) Qual o escore z de uma nota 85?\r\nb) Que porcentagem fica entre 60 e 80 (regra 68-95-99,7)?\r\nc) Qual nota corresponde a z = -1,5?\r\nd) A nota 95 é considerada atípica? Justifique.",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 17,
+  "fields": {
+    "topico": 5,
+    "subtopico": "Correlação",
+    "enunciado_base": "Dados (x, y): (1,2), (2,4), (3,5), (4,4), (5,6). Responda:\r\n\r\na) Calcule as médias de x e y\r\nb) A correlação é positiva ou negativa?\r\nc) Qual a reta de regressão aproximada?\r\nd) O que significa correlação não implicar causalidade?",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 18,
+  "fields": {
+    "topico": 6,
+    "subtopico": "Interpretação de texto",
+    "enunciado_base": "Leia o trecho: 'A tecnologia aproxima quem está longe, mas às vezes afasta quem está perto.' Responda:\r\n\r\na) Qual a ideia central?\r\nb) Qual figura de linguagem predomina?\r\nc) Qual o sentido de 'afasta'?\r\nd) Escreva uma frase com a mesma ideia.",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 19,
+  "fields": {
+    "topico": 6,
+    "subtopico": "Concordância verbal",
+    "enunciado_base": "Corrija e justifique as frases: 'Fazem dois anos que ele viajou.' e 'Houveram muitos problemas.' Responda:\r\n\r\na) Qual a forma correta da primeira?\r\nb) Qual a forma correta da segunda?\r\nc) Qual a regra dos verbos fazer e haver impessoais?\r\nd) Crie um exemplo próprio.",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 20,
+  "fields": {
+    "topico": 7,
+    "subtopico": "Revolução Industrial",
+    "enunciado_base": "Sobre a Revolução Industrial, responda:\r\n\r\na) Em que país e século começou?\r\nb) Cite duas inovações tecnológicas\r\nc) Quais mudanças sociais ocorreram?\r\nd) Relacione com a urbanização",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 21,
+  "fields": {
+    "topico": 7,
+    "subtopico": "Brasil República",
+    "enunciado_base": "Sobre a Proclamação da República no Brasil, responda:\r\n\r\na) Em que ano ocorreu?\r\nb) Quem foi o primeiro presidente?\r\nc) Qual o papel do Exército?\r\nd) Qual foi a República Velha e sua principal característica política?",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 22,
+  "fields": {
+    "topico": 8,
+    "subtopico": "Demografia",
+    "enunciado_base": "Uma cidade tem 120.000 habitantes e área de 400 km². Em um ano nasceram 2.400 e morreram 960 pessoas. Calcule:\r\n\r\na) A densidade demográfica\r\nb) A taxa de natalidade (por mil)\r\nc) A taxa de mortalidade (por mil)\r\nd) O crescimento vegetativo",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 23,
+  "fields": {
+    "topico": 8,
+    "subtopico": "Clima e biomas",
+    "enunciado_base": "Sobre os biomas brasileiros, responda:\r\n\r\na) Qual o maior bioma do Brasil?\r\nb) Qual a principal característica do Cerrado?\r\nc) Onde se localiza a Caatinga?\r\nd) Cite uma ameaça ambiental ao bioma Amazônico",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 24,
+  "fields": {
+    "topico": 9,
+    "subtopico": "Genética",
+    "enunciado_base": "Cruzamento entre dois heterozigotos (Aa x Aa) para um gene com dominância completa. Responda:\r\n\r\na) Quais os genótipos possíveis dos filhos?\r\nb) Qual a proporção genotípica?\r\nc) Qual a proporção fenotípica?\r\nd) Qual a probabilidade de um filho ser aa?",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+},
+{
+  "model": "gerador.esqueletoquestao",
+  "pk": 25,
+  "fields": {
+    "topico": 9,
+    "subtopico": "Ecologia",
+    "enunciado_base": "Considere a cadeia alimentar: capim -> gafanhoto -> sapo -> cobra. Responda:\r\n\r\na) Quem é o produtor?\r\nb) Quem é o consumidor secundário?\r\nc) O que ocorre com a energia a cada nível?\r\nd) O que aconteceria se os sapos desaparecessem?",
+    "instrucoes_ia": "Sorteie os valores numéricos/dados da questão a cada geração para que as provas não repitam a mesma questão. Mantenha o mesmo formato e nível de dificuldade, e garanta que as respostas fiquem coerentes.",
+    "cursos": []
+  }
+}
+]
