@@ -78,8 +78,8 @@ def gerar_provas(request):
             instrucoes_questoes += f"Tópico: {topico_base.nome}\n"
 
             if esqueleto:
-                instrucoes_questoes += f"Base Matemática: {esqueleto.enunciado_base}\n"
-                instrucoes_questoes += f"Regras de Sorteio dos Números: {esqueleto.instrucoes_ia}\n"
+                instrucoes_questoes += f"Enunciado base: {esqueleto.enunciado_base}\n"
+                instrucoes_questoes += f"Regras de variação: {esqueleto.instrucoes_ia}\n"
 
             if qtd_itens > 0:
                 instrucoes_questoes += f"Formato Exigido: Crie {qtd_itens} subitens (a, b, c...) do tipo {formato}.\n\n"
@@ -88,20 +88,28 @@ def gerar_provas(request):
 
         # O NOVO PROMPT: Ordena a IA a separar a Prova do Gabarito em LaTeX puro
         prompt_final = f"""
-        Você é um professor universitário especialista em estatística.
-        Crie a prova usando EXATAMENTE as regras matemáticas abaixo.
+        Você é um professor especialista em cada tópico abaixo.
+        Elabore uma prova adequada ao público indicado, seguindo à risca a estrutura e as regras de variação de cada questão.
+        Escreva tudo em português do Brasil.
 
         {contexto_prova}
 
         ESTRUTURA DAS QUESTÕES:
         {instrucoes_questoes}
 
+        COMO INTERPRETAR AS QUESTÕES:
+        - O "Enunciado base" é um molde: não o copie. Reescreva-o trocando o que pode variar (números, nomes, datas, lugares, exemplos) conforme as "Regras de variação".
+        - Se os valores escolhidos tornarem a questão impossível, ambígua ou absurda, escolha outros valores.
+        - Se uma questão não trouxer "Enunciado base", crie uma questão original sobre o tópico, adequada ao público.
+        - Tipos de questão: "aberta" = resposta discursiva, sem alternativas; "unica" = objetiva com alternativas A) a E), exatamente uma correta; "multipla" = objetiva com alternativas A) a E), indicando no gabarito qual(is) está(ão) correta(s).
+        - Em questões objetivas, escreva cada alternativa em uma linha própria, começando com \\textbf{{A)}}, \\textbf{{B)}} etc. e terminando com \\\\. Use letras maiúsculas para não confundir com os subitens (a), (b), (c).
+
         SUA TAREFA É GERAR DOIS TEXTOS EM LATEX (apenas o CORPO, sem preâmbulo):
 
         TEXTO 1: A PROVA
         - Escreva só o conteúdo das questões. NÃO inclua \\documentclass, \\usepackage, \\begin{{document}}, \\end{{document}} nem \\geometry.
         - NÃO use markdown (nada de **, ---, # nem títulos como "Documento 1").
-        - Comandos permitidos: \\textbf{{}}, \\textit{{}}, \\begin{{enumerate}} com \\item, \\begin{{itemize}} com \\item e \\\\ para quebra de linha. Matemática SEMPRE entre $...$ (ou $$...$$ para destacar).
+        - Comandos permitidos: \\textbf{{}}, \\textit{{}}, \\begin{{enumerate}} com \\item, \\begin{{itemize}} com \\item e \\\\ para quebra de linha. Fórmulas e símbolos matemáticos, quando houver, SEMPRE entre $...$ (ou $$...$$ para destacar).
         - Comece cada questão com \\textbf{{Questão N.}}.
         - Não inclua nenhuma resposta aqui.
         - Após a última questão, insira EXATAMENTE esta tag em uma linha isolada:
@@ -110,6 +118,8 @@ def gerar_provas(request):
         TEXTO 2: O GABARITO COM RESOLUÇÕES
         - Mesmas regras de formatação do texto 1 (sem preâmbulo, sem markdown).
         - Para cada questão, a resolução completa, passo a passo, e a resposta final.
+        - Comece a resolução de cada questão com \\textbf{{Valores usados:}} seguido dos valores e dados que você escolheu (quando houver).
+        - Confira cada cálculo e a resposta final antes de responder. Em questões objetivas, indique a alternativa correta (ou todas as corretas, no tipo "multipla").
         """
 
         try:
@@ -124,7 +134,7 @@ def gerar_provas(request):
 
             texto_bruto = resposta_completa.choices[0].message.content or ""
 
-            # Remove a tag <think> gerada pelo DeepSeek e blocos de código
+            # Remove eventual tag <think> e blocos de código markdown
             resposta_limpa = re.sub(r'<think>.*?</think>', '', texto_bruto, flags=re.DOTALL).strip()
             resposta_limpa = resposta_limpa.replace('```latex', '').replace('```tex', '').replace('```', '').strip()
 
@@ -170,19 +180,25 @@ def treinar_ia(request):
 
         # O Super Prompt para a engenharia reversa
         prompt_treinamento = f"""
-        Você é um Engenheiro de Dados Educacionais. Leia esta lista de exercícios de estatística e extraia a estrutura matemática das questões.
+        Você é um Engenheiro de Dados Educacionais. Leia esta lista de exercícios e extraia a estrutura das questões.
         Ignore cabeçalhos, números das questões e gabaritos.
         Para cada tipo de questão diferente, crie um molde generalista.
+        Escreva em português do Brasil.
 
         Devolva APENAS um código JSON válido (sem formatação markdown) neste formato exato:
         [
             {{
-                "topico": "Nome do Tópico (Ex: Probabilidade)",
-                "subtopico": "Nome do Subtópico (Ex: Teorema de Bayes)",
-                "enunciado_base": "O enunciado original com variáveis (X, Y, Z) no lugar dos números fixos",
-                "instrucoes_ia": "Regras para sortear X, Y e Z e a fórmula genérica para resolver"
+                "topico": "Nome do Tópico (Ex: Probabilidade, Revolução Francesa, Células)",
+                "subtopico": "Nome do Subtópico (Ex: Teorema de Bayes, Revolução Industrial, Mitose)",
+                "enunciado_base": "O enunciado original com variáveis (X, Y, Z...) no lugar do que pode mudar (números, nomes, datas, lugares)",
+                "instrucoes_ia": "Regras para variar X, Y, Z... (faixas, listas de opções, restrições) e como resolver ou responder de forma genérica"
             }}
         ]
+
+        Regras do JSON:
+        - Dentro dos textos, escreva aspas e barras invertidas com escape, para que o JSON seja válido.
+        - Use sempre a mesma grafia (com acentos, sem abreviações) para tópicos e subtópicos que se repetem.
+        - Se uma questão não tiver nada que varie, mantenha o enunciado como está e diga isso em "instrucoes_ia".
 
         Texto da lista de exercícios:
         {texto_extraido}
@@ -192,7 +208,7 @@ def treinar_ia(request):
             resposta_completa = client.chat.completions.create(
                 model=MODELO,
                 messages=[{"role": "user", "content": prompt_treinamento}],
-                temperature=0.3,
+                temperature=0,
                 max_completion_tokens=8192,
                 reasoning_effort="low"
             )
