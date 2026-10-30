@@ -1,0 +1,3 @@
+# Dependências usadas só para GERAR o instalador (não entram no requirements.txt do projeto).
+pyinstaller>=6.10
+waitress>=3.0
