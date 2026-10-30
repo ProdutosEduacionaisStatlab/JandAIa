@@ -1,0 +1,167 @@
+name: Release
+
+# Gera os instaladores (Windows, Linux e macOS) e publica na página de Releases.
+#   Para lançar uma versão:   git tag v1.0.0 && git push origin v1.0.0
+#   Para só testar o build:   Actions > Release > Run workflow (não publica nada)
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHON_VERSION: "3.12"
+  GROQ_API_KEY: chave-falsa-para-o-build   # só para o Django importar o projeto; não é usada
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Definir versão
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then V="${GITHUB_REF_NAME#v}"; else V="0.0.0-dev"; fi
+          echo "$V" > VERSION
+          echo "APP_VERSION=$V" >> "$GITHUB_ENV"
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r installer/requirements-installer.txt
+      - name: Coletar arquivos estáticos
+        run: python manage.py collectstatic --noinput
+      - name: Empacotar com o PyInstaller
+        run: pyinstaller installer/jandaia.spec --noconfirm --clean
+      - name: Autoteste do programa gerado
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath "dist\JandAIa\JandAIa.exe" -ArgumentList "--autoteste", "$PWD\autoteste.txt" -Wait -PassThru
+          if (Test-Path autoteste.txt) { Get-Content autoteste.txt }
+          if ($p.ExitCode -ne 0) { throw "Autoteste falhou (código $($p.ExitCode))" }
+      - name: Instalar o Inno Setup
+        run: choco install innosetup --no-progress -y
+      - name: Gerar o instalador
+        shell: pwsh
+        run: |
+          $iscc = (Get-Command iscc -ErrorAction SilentlyContinue).Source
+          if (-not $iscc) { $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" }
+          & $iscc "/DMyAppVersion=$env:APP_VERSION" "installer\windows\jandaia.iss"
+          if ($LASTEXITCODE -ne 0) { throw "ISCC falhou" }
+      - name: Guardar instalador sem assinatura
+        id: sem-assinatura
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-windows
+          path: dist_installer/*.exe
+      # Assinatura de código (opcional): ativa quando a variável SIGNPATH_ORGANIZATION_ID existir
+      # em Settings > Secrets and variables > Actions. Veja installer/LEIAME.md.
+      - name: Assinar com a SignPath
+        if: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG || 'jandaia' }}
+          signing-policy-slug: ${{ vars.SIGNPATH_POLICY_SLUG || 'release-signing' }}
+          github-artifact-id: ${{ steps.sem-assinatura.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: dist_signed
+      - name: Usar o instalador assinado
+        if: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+        shell: pwsh
+        run: Copy-Item "dist_signed\*.exe" "dist_installer\" -Force
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-windows
+          path: dist_installer/*.exe
+
+  linux:
+    runs-on: ubuntu-22.04      # glibc antiga: o pacote funciona também em sistemas mais antigos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Dependências do sistema (Tk para as janelas)
+        run: sudo apt-get update && sudo apt-get install -y python3-tk tk8.6 tcl8.6 libxss1 libxft2
+      - name: Definir versão
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then V="${GITHUB_REF_NAME#v}"; else V="0.0.0-dev"; fi
+          echo "$V" > VERSION
+          echo "APP_VERSION=$V" >> "$GITHUB_ENV"
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r installer/requirements-installer.txt
+          python -c "import tkinter; print('tkinter', tkinter.TkVersion)"
+      - name: Coletar arquivos estáticos
+        run: python manage.py collectstatic --noinput
+      - name: Empacotar com o PyInstaller
+        run: pyinstaller installer/jandaia.spec --noconfirm --clean
+      - name: Autoteste do programa gerado
+        run: dist/JandAIa/JandAIa --autoteste
+      - name: Gerar o pacote .deb
+        run: bash installer/linux/build_deb.sh "$APP_VERSION"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-linux
+          path: dist_installer/*.deb
+
+  macos:
+    runs-on: macos-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Definir versão
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then V="${GITHUB_REF_NAME#v}"; else V="0.0.0-dev"; fi
+          echo "$V" > VERSION
+          echo "APP_VERSION=$V" >> "$GITHUB_ENV"
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r installer/requirements-installer.txt
+          python -c "import tkinter; print('tkinter', tkinter.TkVersion)"
+      - name: Coletar arquivos estáticos
+        run: python manage.py collectstatic --noinput
+      - name: Empacotar com o PyInstaller
+        run: pyinstaller installer/jandaia.spec --noconfirm --clean
+      - name: Autoteste do programa gerado
+        run: dist/JandAIa.app/Contents/MacOS/JandAIa --autoteste
+      - name: Gerar o .dmg
+        env:
+          APPLE_SIGN_IDENTITY: ${{ secrets.APPLE_SIGN_IDENTITY }}
+        run: bash installer/macos/build_dmg.sh "$APP_VERSION"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-macos
+          path: dist_installer/*.dmg
+
+  publicar:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, linux, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          merge-multiple: true
+          path: artefatos
+      - name: Somas de verificação (SHA-256)
+        run: |
+          cd artefatos
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artefatos/*
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
