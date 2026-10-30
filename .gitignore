@@ -1,13 +1,58 @@
+# Ambientes virtuais
 .venv/
 venv/
 .venv-1/
+env/
 
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
 
-db.sqlite3
+# Segredos e configuracao local (NUNCA versionar)
 .env
+.env.*
+!.env.example
+*.key
+*.pem
+*.pfx
+*.p12
+id_rsa*
+id_ed25519*
+/config.json
+gerador/readme.txt
 
-staticfiles/
+# Bancos de dados e dados do usuario
+*.sqlite3
+*.sqlite3-journal
+*.db
 media/
+*.log
+
+# Arquivos gerados / build
+staticfiles/
+build/
+dist/
+dist_installer/
+dist_signed/
+*.exe
+*.msi
+*.deb
+*.dmg
+*.AppImage
+
+# Pacotes e arquivos de trabalho
+*.zip
+*.tar.gz
+resultado.txt
+mudancas.txt
+status.txt
+stat.txt
+relatorio.txt
+
+# IDE e sistema
 .idea/
+.vscode/
+.DS_Store
+Thumbs.db
